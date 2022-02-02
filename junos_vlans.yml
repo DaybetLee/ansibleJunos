@@ -1,0 +1,103 @@
+---
+- name: junos_vlan module example
+  hosts: ex4300
+  connection: local
+  tasks:
+    - name: Setting up example
+      junos_vlans: 
+        config:
+          - name: vlan102
+            vlan_id: 102
+          - name: vlan103
+            vlan_id: 103
+        state: merged
+
+    - name: Gather fact before merge state
+      junos_facts:
+
+        gather_subset: ["!all", "!default"]
+        gather_network_resources: vlans
+
+    - name: VLAN before merge state
+      debug:
+        var: ansible_network_resources.vlans
+
+################# Using Merged ###################    
+    - name: Merge vlan101
+      junos_vlans: 
+        config:
+          - name: vlan101
+            vlan_id: 101
+        state: merged
+################################################
+    - name: Gather fact after merged state
+      junos_facts:
+
+        gather_subset: ["!all", "!default"]
+        gather_network_resources: vlans
+
+    - name: VLAN after merged state
+      debug:
+        var: ansible_network_resources.vlans
+################## Using Replace ################
+    - name: Replace vlan101 & vlan103 id
+      junos_vlans: 
+        config:
+          - name: vlan101
+            vlan_id: 1010
+          - name: vlan103
+            vlan_id: 303
+        state: replaced
+################################################        
+    - name: Gather fact after replaced state
+      junos_facts:
+
+        gather_subset: ["!all", "!default"]
+        gather_network_resources: vlans
+
+    - name: VLAN after replaced state
+      debug:
+        var: ansible_network_resources.vlans
+################## Using Overriden ################
+    # - name: Override entire VLAN configuration
+    #   junos_vlans: 
+    #     config:
+    #       - name: TEST_VLAN
+    #         vlan_id: 999
+    #       - name: default
+    #         vlan_id: 1
+          # - name: vlan101
+          #   vlan_id: 101
+          # - name: vlan102
+          #   vlan_id: 102
+          # - name: vlan103
+          #   vlan_id: 103
+    #     state: overridden
+################################################   
+    # - name: Gather fact after Overriden state
+    #   junos_facts:
+
+    #     gather_subset: ["!all", "!default"]
+    #     gather_network_resources: vlans
+
+    # - name: VLAN after Overriden state
+    #   debug:
+    #     var: ansible_network_resources.vlans
+################## Using Deleted ################
+    - name: Delete example VLAN 101-103
+      junos_vlans: 
+        config:
+          - name: vlan101
+          - name: vlan102
+          - name: vlan103
+        state: deleted
+################################################   
+    - name: Gather fact after Deleted state
+      junos_facts:
+
+        gather_subset: ["!all", "!default"]
+        gather_network_resources: vlans
+
+    - name: VLAN after Deleted state
+      debug:
+        var: ansible_network_resources.vlans

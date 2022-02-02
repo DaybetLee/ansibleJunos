@@ -1,0 +1,11 @@
+---
+- name: Create VLAN 101 By Playbook
+  hosts: ex4300
+  connection: local
+  tasks:
+    - name: Create vlan101 using junos_vlans module
+      junos_vlans: 
+        config:
+          - name: vlan101
+            vlan_id: 101
+        state: merged

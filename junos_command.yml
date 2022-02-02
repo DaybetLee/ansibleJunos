@@ -1,0 +1,48 @@
+---
+- name: junos_command example
+  hosts: ex4300
+  connection: local
+  tasks:
+    # can be used to capture output and at the same time to check on the condition
+    # if the condition do not match it will stop the playbook or go to next host in var_group if configured
+################################################
+    - name: run show version and check to see if ouput contains 18.4R2-S7.4
+      junos_command:
+        commands: show version
+     
+        interval: 1 # interval of retries
+        retries: 10 # number of retires before command consider fail
+
+        display: text
+        # display: json
+        # display: xml
+        # display: set  # Work only with 'show configuration'
+
+        wait_for: result[0] contains 18.4R2-S7.4  # condition to meet
+
+        match: all  # how to match the condition
+        # match: any
+
+      register: output
+################################################
+    - name: debug for visual
+      debug:
+        var: output
+################################################
+    - name: check if there are any alarms
+      junos_command:
+        commands:
+          - show system alarms
+          - show chassis alarms
+        wait_for:
+          - result[0] contains Not
+          - result[1] contains not
+          - result[2] contains Down
+          - result[3] contains Failure
+
+        match: any
+      register: output
+################################################
+    - name: debug for visual
+      debug:
+        var: output

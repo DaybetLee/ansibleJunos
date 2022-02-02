@@ -1,0 +1,52 @@
+---
+- name: junos_fact example
+  hosts: ex4300
+  tasks:
+    # - name: gather fact using junos_facts module (Task Name)
+    #   junos_facts:
+    #   register: response  # storing output as variable "response"
+
+    # - name: debug (print variable response)
+    #   debug:
+    #     var: response
+
+    # - name: debug (more specific L1)
+    #   debug:
+    #     var: ansible_net_memfree_mb
+
+    # - name: debug (even more specific L2)
+    #   debug:
+    #     var: ansible_net_interfaces.me0
+
+    - name: collect default set of facts and configuration
+      junos_facts:
+        
+        # gather_subset: all
+        # gather_subset: default
+        # gather_subset: hardware
+        # gather_subset: config
+        # gather_subset: interfaces
+        gather_subset: ["!all", "!default"] # Exclude subset, same 4 gather_network_resources
+
+        # gather_network_resources: all
+        # gather_network_resources: interfaces
+        # gather_network_resources: lacp 
+        # gather_network_resources: lacp_interfaces
+        # gather_network_resources: lag_interfaces
+        # gather_network_resources: l2_interfaces
+        # gather_network_resources: l3_interfaces
+        # gather_network_resources: lldp_global
+        # gather_network_resources: lldp_interfaces
+        gather_network_resources: vlans
+
+
+        # config_format: xml
+        # config_format: text # default
+        config_format: set
+        # config_format: json
+
+      register: response
+
+    - name: debug response
+      debug:
+        var: response
