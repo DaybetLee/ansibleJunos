@@ -1,0 +1,56 @@
+---
+- name: junos_command example
+  hosts: ex4300
+  connection: local
+  tasks:
+    - name: capture backup configuration from device to ubuntu host
+    # Unless specify the backup options, default will create a 'backup' folder in same directory
+    # as the play book and the naming will be <hostname>_config.<current-date>@<current-time>
+      junos_config:
+        backup: yes
+        # backup_options:
+        #   filename: backup.cfg
+        #   dir_path: /var/home/ansible
+################################################
+    - name: load configure lines into device
+      junos_config:
+        lines:  # accept 'set' or 'delete' commands
+          - set interfaces ge-0/0/10.0 description "test_interface"
+          - set vlans vlan10 description "test_vlan"
+          - set vlans vlan10 vlan-id 10
+          - set interfaces irb unit 10 family inet address 169.254.254.1/16
+          - set vlans vlan10 l3-interface irb.10
+          - set interfaces ge-0/0/10.0 family ethernet-switching interface-mode access vlan members vlan10
+          - set interfaces ge-0/0/10.0 family ethernet-switching interface-mode trunk vlan members vlan10
+        # check_commit: yes # Tested not to able to check syntax, instead prevent commit (default action) by this task.
+        confirm: 0  # commit confirm, default is 0 meaning commit instantly, action is ignored if check_commit is yes
+        comment: added vlan 10 & ge-0/0/10 configration
+        # update: merge # option to merge (default), override, replace & update
+################################################
+    - name: confirm the previous configuration
+      junos_config:
+        confirm_commit: yes # use to commit the earlier task, comment do not work with this commit
+################################################
+    - name: display system commit
+      junos_command:
+        commands:
+          - show system commit
+      register: output
+################################################
+    - name: debug for visual
+      debug:
+        var: output
+################################################
+    - name: rollback to original configuration
+      junos_config:
+        rollback: 2
+        comment: rollback to original configuration
+################################################
+    - name: zero out the current configuration
+      junos_config:
+        zeroize: no
+################################################
+    - name: load configure file into device
+      junos_config:
+        src: backup/ex4300.cfg
+        comment: load original configuration
